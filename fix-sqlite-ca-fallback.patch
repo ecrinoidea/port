@@ -1,0 +1,231 @@
+*** Begin Patch
+*** Update File: test_save_flow.py
+@@
+-import json
+-from app import app
+-from model import get_db
++import os
++import json
++
++# Set test environment variables early so Config reads them during import
++# Use a harmless localhost value so imports won't raise when DB isn't available.
++os.environ.setdefault('TIDB_HOST', '127.0.0.1')
++os.environ.setdefault('TIDB_USER', 'root')
++os.environ.setdefault('TIDB_PASSWORD', '')
++os.environ.setdefault('TIDB_DB', 'db_porto')
++
++from app import app
++from model import get_db
+*** End Patch
+*** Begin Patch
+*** Update File: config.py
+@@
+-import os
+-from dotenv import load_dotenv
+-
+-load_dotenv()
+-
+-class Config:
++import os
++import base64
++import tempfile
++from dotenv import load_dotenv
++
++load_dotenv()
++
++
++class Config:
+@@
+-    # Pastikan path SSL CA aman
+-    raw_ca = os.getenv('TIDB_SSL_CA')
+-    if raw_ca:
+-        TIDB_SSL_CA = raw_ca.replace("\\", "/")  # ganti backslash jadi slash
+-    else:
+-        TIDB_SSL_CA = None
++    # Pastikan path SSL CA aman atau dukung env var base64 (`TIDB_SSL_CA_B64`)
++    raw_ca = os.getenv('TIDB_SSL_CA')
++    raw_ca_b64 = os.getenv('TIDB_SSL_CA_B64')
++
++    if raw_ca_b64:
++        try:
++            ca_bytes = base64.b64decode(raw_ca_b64)
++            # Tuliskan ke file temporer dan simpan pathnya
++            tmp = tempfile.NamedTemporaryFile(delete=False, prefix='tidb_ca_', suffix='.pem')
++            tmp.write(ca_bytes)
++            tmp.flush()
++            tmp.close()
++            TIDB_SSL_CA = tmp.name.replace("\\", "/")
++        except Exception as e:
++            print(f"⚠️  Gagal decode TIDB_SSL_CA_B64: {e}")
++            TIDB_SSL_CA = None
++    elif raw_ca:
++        TIDB_SSL_CA = raw_ca.replace("\\", "/")  # ganti backslash jadi slash
++    else:
++        TIDB_SSL_CA = None
+*** End Patch
+*** Begin Patch
+*** Update File: model.py
+@@
+-import os
+-import sqlite3
+-import pymysql
+-from config import Config
++import os
++import sqlite3
++import pymysql
++from config import Config
+@@
+-        ca_path = Config.TIDB_SSL_CA
+-
+-        # Try TiDB / MySQL first if host is configured
+-        if Config.TIDB_HOST:
+-            connect_kwargs = {
+-                'host': Config.TIDB_HOST,
+-                'port': Config.TIDB_PORT,
+-                'user': Config.TIDB_USER,
+-                'password': Config.TIDB_PASSWORD,
+-                'database': Config.TIDB_DB,
+-                'charset': 'utf8mb4',
+-                'cursorclass': pymysql.cursors.DictCursor,
+-            }
+-            if ca_path and os.path.exists(ca_path):
+-                connect_kwargs['ssl'] = {'ca': ca_path}
+-
+-            try:
+-                connection = pymysql.connect(**connect_kwargs)
+-                connection.__dict__['__db_backend'] = 'mysql'
+-                return connection
+-            except Exception as e:
+-                print(f"⚠️  Could not connect to TiDB/MySQL ({e}), falling back to SQLite.")
+-
+-        # Fallback: use SQLite file in project root
+-        sqlite_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'db_porto.sqlite')
+-        raw_conn = sqlite3.connect(sqlite_path, check_same_thread=False)
+-        raw_conn.row_factory = sqlite3.Row
+-
+-        # Wrapper to provide a unified interface
+-        class DBConnection:
+-            def __init__(self, raw, backend):
+-                self._raw = raw
+-                self.backend = backend
+-
+-            def cursor(self):
+-                if self.backend == 'mysql':
+-                    return self._raw.cursor()
+-                # sqlite: return context manager that yields a wrapped cursor
+-                cur = self._raw.cursor()
+-
+-                class CurWrap:
+-                    def __enter__(self_inner):
+-                        return self_inner
+-
+-                    def __exit__(self_inner, exc_type, exc, tb):
+-                        cur.close()
+-
+-                    def execute(self_inner, *args, **kwargs):
+-                        return cur.execute(*args, **kwargs)
+-
+-                    def executemany(self_inner, *args, **kwargs):
+-                        return cur.executemany(*args, **kwargs)
+-
+-                    def fetchone(self_inner):
+-                        row = cur.fetchone()
+-                        return dict(row) if row is not None else None
+-
+-                    def fetchall(self_inner):
+-                        rows = cur.fetchall()
+-                        return [dict(r) for r in rows]
+-
+-                return CurWrap()
+-
+-            def commit(self):
+-                return self._raw.commit()
+-
+-            def close(self):
+-                return self._raw.close()
+-
+-            def __getattr__(self, name):
+-                return getattr(self._raw, name)
+-
+-        return DBConnection(raw_conn, 'sqlite')
++        ca_path = Config.TIDB_SSL_CA
++
++        # Try TiDB / MySQL first if host is configured
++        if Config.TIDB_HOST:
++            connect_kwargs = {
++                'host': Config.TIDB_HOST,
++                'port': Config.TIDB_PORT,
++                'user': Config.TIDB_USER,
++                'password': Config.TIDB_PASSWORD,
++                'database': Config.TIDB_DB,
++                'charset': 'utf8mb4',
++                'cursorclass': pymysql.cursors.DictCursor,
++            }
++            if ca_path and os.path.exists(ca_path):
++                connect_kwargs['ssl'] = {'ca': ca_path}
++
++            try:
++                connection = pymysql.connect(**connect_kwargs)
++                connection.__dict__['__db_backend'] = 'mysql'
++                return connection
++            except Exception as e:
++                print(f"⚠️  Could not connect to TiDB/MySQL ({e}), falling back to SQLite.")
++
++        # Fallback: use SQLite file in project root
++        sqlite_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'db_porto.sqlite')
++        raw_conn = sqlite3.connect(sqlite_path, check_same_thread=False)
++        raw_conn.row_factory = sqlite3.Row
++
++        # Wrapper to provide a unified interface
++        class DBConnection:
++            def __init__(self, raw, backend):
++                self._raw = raw
++                self.backend = backend
++
++            def cursor(self):
++                if self.backend == 'mysql':
++                    return self._raw.cursor()
++                # sqlite: return context manager that yields a wrapped cursor
++                cur = self._raw.cursor()
++
++                class CurWrap:
++                    def __enter__(self_inner):
++                        return self_inner
++
++                    def __exit__(self_inner, exc_type, exc, tb):
++                        cur.close()
++
++                    def execute(self_inner, *args, **kwargs):
++                        return cur.execute(*args, **kwargs)
++
++                    def executemany(self_inner, *args, **kwargs):
++                        return cur.executemany(*args, **kwargs)
++
++                    def fetchone(self_inner):
++                        row = cur.fetchone()
++                        return dict(row) if row is not None else None
++
++                    def fetchall(self_inner):
++                        rows = cur.fetchall()
++                        return [dict(r) for r in rows]
++
++                return CurWrap()
++
++            def commit(self):
++                return self._raw.commit()
++
++            def close(self):
++                return self._raw.close()
++
++            def __getattr__(self, name):
++                return getattr(self._raw, name)
++
++        return DBConnection(raw_conn, 'sqlite')
+@@
+-    conn = get_db()
+-    try:
+-        backend = conn.__dict__.get('__db_backend', 'sqlite')
++    conn = get_db()
++    try:
++        backend = getattr(conn, 'backend', 'sqlite')
+*** End Patch

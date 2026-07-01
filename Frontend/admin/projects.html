@@ -1,0 +1,72 @@
+{% extends "admin/base.html" %}
+{% block title %}Proyek{% endblock %}
+{% block page_title %}Kelola Proyek{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="section-header">
+        <span class="section-title">Data Proyek</span>
+        <button class="btn btn-primary btn-sm" onclick="openModal('projModal'); resetForm()">+ Tambah Proyek</button>
+    </div>
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr><th>Gambar</th><th>Judul</th><th>Tech Stack</th><th>Featured</th><th>Aksi</th></tr>
+            </thead>
+            <tbody id="projBody"></tbody>
+        </table>
+    </div>
+</div>
+
+<div id="projModal" class="modal-backdrop">
+    <div class="modal">
+        <div class="modal-header">
+            <span class="modal-title" id="modalTitle">Tambah Proyek</span>
+            <button class="modal-close" onclick="closeModal('projModal')">✕</button>
+        </div>
+        <input type="hidden" id="projId">
+        <div class="form-group">
+            <label>Judul Proyek *</label>
+            <input type="text" id="pjTitle" class="form-control">
+        </div>
+        <div class="form-group">
+            <label>Deskripsi</label>
+            <textarea id="pjDesc" class="form-control" rows="3"></textarea>
+        </div>
+        <div class="form-group">
+            <label>Tech Stack</label>
+            <input type="text" id="pjTech" class="form-control" placeholder="Python, Flask, MySQL">
+        </div>
+        <div class="form-group">
+            <label>URL Gambar (Cloudinary)</label>
+            <div style="display:flex; gap:8px;">
+                <input type="text" id="pjImage" class="form-control" placeholder="https://res.cloudinary.com/...">
+                <div style="position:relative;">
+                    <input type="file" id="projImgFile" accept="image/*" style="position:absolute; opacity:0; width:100%; height:100%; cursor:pointer; top:0; left:0;">
+                    <button class="btn btn-outline btn-sm" style="white-space:nowrap;">Upload</button>
+                </div>
+            </div>
+        </div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px;">
+            <div class="form-group">
+                <label>Demo URL</label>
+                <input type="text" id="pjDemo" class="form-control">
+            </div>
+            <div class="form-group">
+                <label>Repository URL</label>
+                <input type="text" id="pjRepo" class="form-control">
+            </div>
+        </div>
+        <div class="form-group" style="display:flex; align-items:center; gap:10px;">
+            <input type="checkbox" id="pjFeatured" style="accent-color:#8b78b8; width:16px; height:16px;">
+            <label for="pjFeatured" style="margin:0; cursor:pointer;">Tampilkan sebagai proyek unggulan</label>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-outline btn-sm" onclick="closeModal('projModal')">Batal</button>
+            <button class="btn btn-primary btn-sm" onclick="saveProj()">Simpan</button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}<script src="{{ url_for('static', filename='admin/js/projects.js') }}"></script>{% endblock %}

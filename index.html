@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portofolio</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='utama/css/style.css') }}">
+
+</head>
+<body>
+
+<!-- Navbar -->
+<nav class="navbar" id="navbar">
+    <div class="nav-inner">
+        <a href="#home" class="nav-logo">✦ Reyna</a>
+        <div class="nav-links">
+            <a href="#about">Tentang</a>
+            <a href="#skills">Skill</a>
+            <a href="#experience">Pengalaman</a>
+            <a href="#projects">Proyek</a>
+            <a href="#contact">Kontak</a>
+        </div>
+    </div>
+</nav>
+
+<!-- Hero -->
+<section class="hero" id="home">
+    <div class="hero-bg">
+        <div class="orb orb-a"></div>
+        <div class="orb orb-b"></div>
+        <div class="orb orb-c"></div>
+    </div>
+    <div class="hero-content">
+        <div class="hero-photo-wrap" id="heroPhotoWrap" style="display:none;">
+            <img id="heroPhoto" src="" alt="Foto Profil" class="hero-photo">
+        </div>
+        <div class="hero-tag">👋 Halo, saya</div>
+        <h1 class="hero-name" id="heroName">Shafa Reyna Nugrahani</h1>
+        <p class="hero-title" id="heroTitle">Mahasiswa S1 Sistem Informasi</p>
+        <p class="hero-bio" id="heroBio">Universitas Kristen Satya Wacana</p>
+        <div class="hero-actions">
+            <a href="#projects" class="btn-hero">Lihat Proyek</a>
+            <a href="#contact" class="btn-hero-outline">Hubungi Saya</a>
+        </div>
+        <div class="hero-socials" id="heroSocials"></div>
+    </div>
+</section>
+
+<!-- About -->
+<section class="section" id="about">
+    <div class="container">
+        <div class="section-label">Tentang Saya</div>
+        <h2 class="section-title">Kenali Lebih Dekat</h2>
+        <div class="about-grid">
+            <div class="about-card" id="aboutInfo"></div>
+        </div>
+    </div>
+</section>
+
+<!-- Skills -->
+<section class="section section-alt" id="skills">
+    <div class="container">
+        <div class="section-label">Keahlian</div>
+        <h2 class="section-title">Skill & Teknologi</h2>
+        <div class="skills-grid" id="skillsGrid"></div>
+    </div>
+</section>
+
+<!-- Experience -->
+<section class="section" id="experience">
+    <div class="container">
+        <div class="section-label">Pengalaman</div>
+        <h2 class="section-title">Riwayat Pengalaman</h2>
+        <div class="timeline" id="timeline"></div>
+    </div>
+</section>
+
+<!-- Projects -->
+<section class="section section-alt" id="projects">
+    <div class="container">
+        <div class="section-label">Proyek</div>
+        <h2 class="section-title">Karya Terbaik</h2>
+        <div class="projects-grid" id="projectsGrid"></div>
+    </div>
+</section>
+
+<!-- Contact -->
+<section class="section contact-section" id="contact">
+    <div class="container">
+        <div class="section-label">Kontak</div>
+        <h2 class="section-title">Kirim Pesan</h2>
+        <p class="section-sub">Ada pertanyaan atau ingin berkolaborasi? Kirimkan pesan dan saya akan segera merespons.</p>
+        <div class="contact-form-wrap">
+            <div id="formMsg" class="form-msg" style="display:none;"></div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Nama Lengkap</label>
+                    <input type="text" id="cName" class="fc" placeholder="Nama Anda">
+                </div>
+                <div class="form-group">
+                    <label>Alamat Email</label>
+                    <input type="email" id="cEmail" class="fc" placeholder="email@example.com">
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Subjek</label>
+                <input type="text" id="cSubject" class="fc" placeholder="Perihal pesan...">
+            </div>
+            <div class="form-group">
+                <label>Pesan</label>
+                <textarea id="cMessage" class="fc" rows="5" placeholder="Tuliskan pesan Anda..."></textarea>
+            </div>
+            <button class="btn-send" id="sendBtn" onclick="sendContact()">Kirim Pesan →</button>
+        </div>
+    </div>
+</section>
+
+<!-- Footer -->
+<footer class="footer">
+    <div class="container">
+        <p>© 2026 · Dibuat dengan ♡ menggunakan Flask & TiDB</p>
+        <a href="/admin/login" style="color:#e9acbb; font-size:12px;">Admin</a>
+    </div>
+</footer>
+
+<script src="{{ url_for('static', filename='utama/js/script.js') }}"></script>
+</body>
+</html>

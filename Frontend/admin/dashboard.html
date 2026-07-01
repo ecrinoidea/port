@@ -1,0 +1,44 @@
+{% extends "admin/base.html" %}
+{% block title %}Dashboard{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-icon">◉</div>
+        <div class="stat-label">Profil</div>
+        <div class="stat-value">{{ stats.profiles }}</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon">◈</div>
+        <div class="stat-label">Skill</div>
+        <div class="stat-value">{{ stats.skills }}</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon">◷</div>
+        <div class="stat-label">Pengalaman</div>
+        <div class="stat-value">{{ stats.experiences }}</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon">◧</div>
+        <div class="stat-label">Proyek</div>
+        <div class="stat-value">{{ stats.projects }}</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon">◎</div>
+        <div class="stat-label">Pesan Belum Dibaca</div>
+        <div class="stat-value">{{ stats.unread_messages }}</div>
+    </div>
+</div>
+
+<div class="card">
+    <h3 style="font-size:14px; font-weight:700; color:#6b6480; margin-bottom:16px;">Menu Cepat</h3>
+    <div style="display:flex; flex-wrap:wrap; gap:10px;">
+        <a href="/admin/profiles" class="btn btn-outline">+ Tambah Profil</a>
+        <a href="/admin/skills" class="btn btn-outline">+ Tambah Skill</a>
+        <a href="/admin/experience" class="btn btn-outline">+ Tambah Pengalaman</a>
+        <a href="/admin/projects" class="btn btn-outline">+ Tambah Proyek</a>
+        <a href="/admin/contacts" class="btn btn-outline">Lihat Pesan</a>
+    </div>
+</div>
+{% endblock %}

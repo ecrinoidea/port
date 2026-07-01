@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Admin Panel{% endblock %} — Portofolio</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='admin/css/base.css') }}">
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <div class="layout">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-logo">
+                <div class="logo-icon">✦</div>
+                <span>Admin Panel</span>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="/admin/dashboard" class="nav-item {% if request.path == '/admin/dashboard' or request.path == '/admin' %}active{% endif %}">
+                    <span class="nav-icon">⊞</span> Dashboard
+                </a>
+                <a href="/admin/profiles" class="nav-item {% if 'profiles' in request.path %}active{% endif %}">
+                    <span class="nav-icon">◉</span> Profil
+                </a>
+                <a href="/admin/skills" class="nav-item {% if 'skills' in request.path %}active{% endif %}">
+                    <span class="nav-icon">◈</span> Skill
+                </a>
+                <a href="/admin/experience" class="nav-item {% if 'experience' in request.path %}active{% endif %}">
+                    <span class="nav-icon">◷</span> Pengalaman
+                </a>
+                <a href="/admin/projects" class="nav-item {% if 'projects' in request.path %}active{% endif %}">
+                    <span class="nav-icon">◧</span> Proyek
+                </a>
+                <a href="/admin/contacts" class="nav-item {% if 'contacts' in request.path %}active{% endif %}">
+                    <span class="nav-icon">◎</span> Pesan
+                </a>
+                <div class="nav-divider"></div>
+                <a href="/" class="nav-item" target="_blank">
+                    <span class="nav-icon">↗</span> Lihat Website
+                </a>
+                <a href="/admin/logout" class="nav-item nav-logout">
+                    <span class="nav-icon">⊗</span> Keluar
+                </a>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="topbar">
+                <h1 class="page-title">{% block page_title %}Dashboard{% endblock %}</h1>
+                <div class="topbar-right">
+                    <span class="admin-badge">Admin</span>
+                </div>
+            </header>
+            <div class="content-area">
+                {% block content %}{% endblock %}
+            </div>
+        </main>
+    </div>
+
+    <!-- Toast notification -->
+    <div id="toast" class="toast"></div>
+
+    <script src="{{ url_for('static', filename='admin/js/base.js') }}"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

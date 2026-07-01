@@ -1,0 +1,62 @@
+{% extends "admin/base.html" %}
+{% block title %}Pengalaman{% endblock %}
+{% block page_title %}Kelola Pengalaman{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="section-header">
+        <span class="section-title">Data Pengalaman</span>
+        <button class="btn btn-primary btn-sm" onclick="openModal('expModal'); resetForm()">+ Tambah Pengalaman</button>
+    </div>
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr><th>Perusahaan</th><th>Posisi</th><th>Periode</th><th>Status</th><th>Aksi</th></tr>
+            </thead>
+            <tbody id="expBody"></tbody>
+        </table>
+    </div>
+</div>
+
+<div id="expModal" class="modal-backdrop">
+    <div class="modal">
+        <div class="modal-header">
+            <span class="modal-title" id="modalTitle">Tambah Pengalaman</span>
+            <button class="modal-close" onclick="closeModal('expModal')">✕</button>
+        </div>
+        <input type="hidden" id="expId">
+        <div class="form-group">
+            <label>Nama Perusahaan *</label>
+            <input type="text" id="eCompany" class="form-control">
+        </div>
+        <div class="form-group">
+            <label>Posisi / Jabatan *</label>
+            <input type="text" id="ePosition" class="form-control">
+        </div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px;">
+            <div class="form-group">
+                <label>Tanggal Mulai</label>
+                <input type="text" id="eStart" class="form-control" placeholder="Jan 2022">
+            </div>
+            <div class="form-group">
+                <label>Tanggal Selesai</label>
+                <input type="text" id="eEnd" class="form-control" placeholder="Des 2023 / kosongkan jika masih">
+            </div>
+        </div>
+        <div class="form-group" style="display:flex; align-items:center; gap:10px;">
+            <input type="checkbox" id="eCurrent" style="accent-color:#8b78b8; width:16px; height:16px;">
+            <label for="eCurrent" style="margin:0; cursor:pointer;">Masih bekerja di sini</label>
+        </div>
+        <div class="form-group">
+            <label>Deskripsi</label>
+            <textarea id="eDesc" class="form-control" rows="3"></textarea>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-outline btn-sm" onclick="closeModal('expModal')">Batal</button>
+            <button class="btn btn-primary btn-sm" onclick="saveExp()">Simpan</button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}<script src="{{ url_for('static', filename='admin/js/experience.js') }}"></script>{% endblock %}

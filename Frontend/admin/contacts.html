@@ -1,0 +1,21 @@
+{% extends "admin/base.html" %}
+{% block title %}Pesan Masuk{% endblock %}
+{% block page_title %}Pesan Masuk{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="section-header">
+        <span class="section-title">Daftar Pesan</span>
+    </div>
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr><th>Nama</th><th>Email</th><th>Subjek</th><th>Pesan</th><th>Waktu</th><th>Aksi</th></tr>
+            </thead>
+            <tbody id="contactBody"></tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}<script src="{{ url_for('static', filename='admin/js/contacts.js') }}"></script>{% endblock %}
