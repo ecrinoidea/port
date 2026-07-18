@@ -27,6 +27,15 @@ async function loadProfile() {
         document.getElementById('heroBio').textContent = p.bio || '';
         document.title = `${p.name || 'Portofolio'} — Portfolio`;
 
+        // Tampilkan photo jika ada
+        if (p.photo_url) {
+            const photoWrap = document.getElementById('heroPhotoWrap');
+            const photoEl = document.getElementById('heroPhoto');
+            photoEl.src = p.photo_url;
+            photoEl.alt = p.name || 'Foto Profil';
+            photoWrap.style.display = 'block';
+        }
+
         // Socials
         const socials = document.getElementById('heroSocials');
         if (p.github) socials.innerHTML += `<a href="${p.github}" class="social-link" target="_blank">⟨/⟩ GitHub</a>`;
@@ -41,7 +50,7 @@ async function loadProfile() {
             p.location ? `<div class="about-item"><div class="about-item-label">Lokasi</div><div class="about-item-value">${p.location}</div></div>` : '',
             p.github   ? `<div class="about-item"><div class="about-item-label">GitHub</div><div class="about-item-value"><a href="${p.github}" target="_blank">${p.github.replace('https://','')}</a></div></div>` : '',
             p.linkedin ? `<div class="about-item"><div class="about-item-label">LinkedIn</div><div class="about-item-value"><a href="${p.linkedin}" target="_blank">Lihat Profil</a></div></div>` : '',
-            p.instagram ? `<div class="about-item"><div class="about-item-label">Instagram</div><div class="about-item-value"><a href="${p.instagram}" target="_blank">${p.instagram.replace('https://','')}</a></div></div>` : '',
+            p.instagram ? `<div class="about-item"><div class="about-item-label">Instagram</div><div class="about-item-value"><a href="${p.instagram}" target="_blank">${p.instagram.replace('https://','')}</a></div></div>` : ''
         ].filter(Boolean).join('');
         
         let htmlAbout = '';
