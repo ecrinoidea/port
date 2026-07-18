@@ -139,6 +139,52 @@ def init_db():
                     'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=800&q=80'
                 ))
 
+            # Seed default skills
+            cur.execute("SELECT COUNT(*) as cnt FROM skills")
+            if cur.fetchone()['cnt'] == 0:
+                skills_data = [
+                    ('HTML', 'Frontend', 95, '🏷️'),
+                    ('CSS', 'Frontend', 90, '🎨'),
+                    ('JavaScript', 'Frontend', 85, '⚡'),
+                    ('Python', 'Backend', 88, '🐍'),
+                    ('Flask', 'Backend', 85, '🔥'),
+                    ('MySQL', 'Database', 80, '💾'),
+                    ('Git', 'Tools', 75, '📦'),
+                    ('REST API', 'Backend', 82, '🔗'),
+                ]
+                for name, category, level, icon in skills_data:
+                    cur.execute("""
+                        INSERT INTO skills (name, category, level, icon)
+                        VALUES (%s, %s, %s, %s)
+                    """, (name, category, level, icon))
+
+            # Seed default experiences
+            cur.execute("SELECT COUNT(*) as cnt FROM experiences")
+            if cur.fetchone()['cnt'] == 0:
+                experiences_data = [
+                    ('PT Tech Indonesia', 'Junior Developer', 'Jan 2023', None, 1, 'Mengembangkan website responsif menggunakan Flask dan JavaScript.', None),
+                    ('Freelance', 'Web Developer', 'Jun 2022', 'Dec 2022', 0, 'Membuat website portofolio dan landing page untuk klien.', None),
+                ]
+                for company, position, start_date, end_date, is_current, description, logo_url in experiences_data:
+                    cur.execute("""
+                        INSERT INTO experiences (company, position, start_date, end_date, is_current, description, logo_url)
+                        VALUES (%s, %s, %s, %s, %s, %s, %s)
+                    """, (company, position, start_date, end_date, is_current, description, logo_url))
+
+            # Seed default projects
+            cur.execute("SELECT COUNT(*) as cnt FROM projects")
+            if cur.fetchone()['cnt'] == 0:
+                projects_data = [
+                    ('Portfolio Website', 'Website portofolio interaktif dengan Flask backend dan TiDB database.', 'HTML,CSS,JavaScript,Flask,TiDB', 'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?auto=format&fit=crop&w=600&q=60', 'https://port-liart-one.vercel.app', 'https://github.com/ecrinoidea/port', 1),
+                    ('E-Commerce App', 'Aplikasi e-commerce dengan fitur checkout dan payment gateway.', 'Python,Flask,MySQL,Tailwind', 'https://images.unsplash.com/photo-1563013544-824ae1bf4d22?auto=format&fit=crop&w=600&q=60', None, None, 0),
+                    ('Task Management System', 'Aplikasi manajemen tugas dengan fitur real-time notification.', 'JavaScript,React,Firebase', 'https://images.unsplash.com/photo-1540350872786-f8a9c34cdf04?auto=format&fit=crop&w=600&q=60', None, None, 0),
+                ]
+                for title, description, tech_stack, image_url, demo_url, repo_url, is_featured in projects_data:
+                    cur.execute("""
+                        INSERT INTO projects (title, description, tech_stack, image_url, demo_url, repo_url, is_featured)
+                        VALUES (%s, %s, %s, %s, %s, %s, %s)
+                    """, (title, description, tech_stack, image_url, demo_url, repo_url, is_featured))
+
             conn.commit()
     finally:
         conn.close()
@@ -149,14 +195,14 @@ def get_profiles():
         conn = get_db()
         try:
             with conn.cursor() as cur:
-                cur.execute("SELECT * FROM profiles")
-                result = cur.fetchall()
-            return result if result else []
+                cur.execute("SELECT * FROM profiles ORDER BY id DESC LIMIT 1")
+                result = cur.fetchone()
+            return result if result else None
         finally:
             conn.close()
     except Exception as e:
         print(f"❌ Error getting profiles: {e}")
-        return []
+        return None
 
 
 def get_skills():
@@ -164,7 +210,7 @@ def get_skills():
         conn = get_db()
         try:
             with conn.cursor() as cur:
-                cur.execute("SELECT * FROM skills")
+                cur.execute("SELECT * FROM skills ORDER BY category, level DESC")
                 result = cur.fetchall()
             return result if result else []
         finally:
@@ -179,7 +225,7 @@ def get_projects():
         conn = get_db()
         try:
             with conn.cursor() as cur:
-                cur.execute("SELECT * FROM projects")
+                cur.execute("SELECT * FROM projects ORDER BY is_featured DESC, id DESC")
                 result = cur.fetchall()
             return result if result else []
         finally:
@@ -194,7 +240,7 @@ def get_experience():
         conn = get_db()
         try:
             with conn.cursor() as cur:
-                cur.execute("SELECT * FROM experiences")
+                cur.execute("SELECT * FROM experiences ORDER BY is_current DESC, id DESC")
                 result = cur.fetchall()
             return result if result else []
         finally:
