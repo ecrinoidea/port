@@ -1,111 +1,105 @@
-let skills = [];
+let currentSkillId = null;
+
+document.getElementById('skillForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const body = {
+        name: document.getElementById('sName').value.trim(),
+        category: document.getElementById('sCategory').value || null,
+        level: parseInt(document.getElementById('sLevel').value) || 80,
+        icon: document.getElementById('sIcon').value.trim() || null
+    };
+
+    if (!body.name) {
+        alert('Nama skill harus diisi!');
+        return;
+    }
+
+    try {
+        const url = currentSkillId ? `/api/admin/skills/${currentSkillId}` : '/api/admin/skills';
+        const method = currentSkillId ? 'PUT' : 'POST';
+        
+        const res = await fetch(url, {
+            method: method,
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body)
+        });
+        
+        const data = await res.json();
+        if (data.success) {
+            alert(data.message);
+            document.getElementById('skillForm').reset();
+            currentSkillId = null;
+            loadSkills();
+        } else {
+            alert('Error: ' + (data.message || JSON.stringify(data)));
+        }
+    } catch (e) {
+        alert('Error: ' + e.message);
+    }
+});
 
 async function loadSkills() {
     try {
-        console.log('📥 Loading skills...');
-        const res = await apiCall('/api/admin/skills');
-        if (!res.success) {
-            console.warn('⚠️  Load skills failed:', res.message);
-            showToast(res.message || 'Gagal load skills', 'error');
+        const res = await fetch('/api/admin/skills');
+        const data = await res.json();
+        const tbody = document.getElementById('skillsList');
+        
+        if (!data.data || data.data.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:#999;">Tidak ada data skill</td></tr>';
             return;
         }
-        skills = res.data || [];
-        console.log(`✅ Loaded ${skills.length} skills`);
-        renderTable();
-    } catch (err) {
-        console.error('❌ Error in loadSkills:', err);
-        showToast('Terjadi kesalahan saat load skills', 'error');
+        
+        tbody.innerHTML = data.data.map(s => `
+            <tr>
+                <td>${s.name}</td>
+                <td>${s.category || '-'}</td>
+                <td>${s.level}%</td>
+                <td>${s.icon || '-'}</td>
+                <td>
+                    <button class="btn-edit" onclick="editSkill(${s.id})">Edit</button>
+                    <button class="btn-danger" onclick="deleteSkill(${s.id})">Hapus</button>
+                </td>
+            </tr>
+        `).join('');
+    } catch (e) {
+        console.error('Error loading skills:', e);
+        alert('Error loading skills: ' + e.message);
     }
 }
 
-const catColors = { Backend: 'badge-purple', Frontend: 'badge-sage', Database: 'badge-amber', Tools: 'badge-blush' };
-
-function renderTable() {
-    const tbody = document.getElementById('skillBody');
-    if (!skills.length) {
-        tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:#a09ab8;padding:24px;">Belum ada skill</td></tr>';
-        return;
-    }
-    tbody.innerHTML = skills.map(s => `
-        <tr>
-            <td><strong>${s.name}</strong></td>
-            <td>${s.category ? `<span class="badge ${catColors[s.category] || 'badge-purple'}">${s.category}</span>` : '—'}</td>
-            <td>
-                <div style="display:flex; align-items:center; gap:10px; min-width:160px;">
-                    <div class="progress-bar" style="flex:1;">
-                        <div class="progress-fill" style="width:${s.level}%"></div>
-                    </div>
-                    <span style="font-size:12px; color:#8b83a4; min-width:32px;">${s.level}%</span>
-                </div>
-            </td>
-            <td>
-                <button class="btn btn-outline btn-sm" onclick="editSkill(${s.id})">Edit</button>
-                <button class="btn btn-danger btn-sm" onclick="confirmDelete(() => deleteSkill(${s.id}))">Hapus</button>
-            </td>
-        </tr>
-    `).join('');
-}
-
-function resetForm() {
-    document.getElementById('skillId').value = '';
-    document.getElementById('modalTitle').textContent = 'Tambah Skill';
-    document.getElementById('sName').value = '';
-    document.getElementById('sCategory').value = '';
-    document.getElementById('sLevel').value = 80;
-    document.getElementById('levelVal').textContent = '80';
-}
-
-function editSkill(id) {
-    const s = skills.find(x => x.id === id);
-    if (!s) return;
-    document.getElementById('skillId').value = s.id;
-    document.getElementById('modalTitle').textContent = 'Edit Skill';
-    document.getElementById('sName').value = s.name || '';
-    document.getElementById('sCategory').value = s.category || '';
-    document.getElementById('sLevel').value = s.level || 80;
-    document.getElementById('levelVal').textContent = s.level || 80;
-    openModal('skillModal');
-}
-
-async function saveSkill() {
-    const id = document.getElementById('skillId').value;
-    const body = {
-        name: document.getElementById('sName').value.trim(),
-        category: document.getElementById('sCategory').value.trim(),
-        level: parseInt(document.getElementById('sLevel').value)
-    };
-    if (!body.name) { alert('Nama skill wajib diisi'); return; }
+async function editSkill(id) {
     try {
-        const url = id ? `/api/admin/skills/${id}` : '/api/admin/skills';
-        const method = id ? 'PUT' : 'POST';
-        console.log(`📤 ${method} ${url}`, body);
-        const res = await apiCall(url, method, body);
-        if (res.success) {
-            showToast(res.message || 'Berhasil disimpan', 'success');
-            closeModal('skillModal');
-            loadSkills();
-        } else {
-            showToast(res.message || 'Gagal', 'error');
+        const res = await fetch('/api/admin/skills');
+        const data = await res.json();
+        const skill = data.data.find(s => s.id === id);
+        
+        if (skill) {
+            currentSkillId = id;
+            document.getElementById('sId').value = skill.id;
+            document.getElementById('sName').value = skill.name || '';
+            document.getElementById('sCategory').value = skill.category || '';
+            document.getElementById('sLevel').value = skill.level || 80;
+            document.getElementById('sIcon').value = skill.icon || '';
         }
-    } catch (err) {
-        console.error('❌ Error in saveSkill:', err);
-        showToast('Terjadi kesalahan saat save', 'error');
+    } catch (e) {
+        alert('Error: ' + e.message);
     }
 }
 
 async function deleteSkill(id) {
+    if (!confirm('Yakin ingin menghapus skill ini?')) return;
+    
     try {
-        console.log(`📤 DELETE /api/admin/skills/${id}`);
-        const res = await apiCall(`/api/admin/skills/${id}`, 'DELETE');
-        if (res.success) {
-            showToast(res.message || 'Berhasil dihapus', 'success');
+        const res = await fetch(`/api/admin/skills/${id}`, { method: 'DELETE' });
+        const data = await res.json();
+        if (data.success) {
+            alert(data.message);
             loadSkills();
         } else {
-            showToast(res.message || 'Gagal dihapus', 'error');
+            alert('Error: ' + data.message);
         }
-    } catch (err) {
-        console.error('❌ Error in deleteSkill:', err);
-        showToast('Terjadi kesalahan saat hapus', 'error');
+    } catch (e) {
+        alert('Error: ' + e.message);
     }
 }
 

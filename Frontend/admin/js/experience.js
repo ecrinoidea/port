@@ -1,107 +1,118 @@
-let exps = [];
+let currentExperienceId = null;
 
-async function loadExps() {
-    try {
-        console.log('📥 Loading experiences...');
-        const res = await apiCall('/api/admin/experiences');
-        if (!res.success) {
-            console.warn('⚠️  Load experiences failed:', res.message);
-            showToast(res.message || 'Gagal load experiences', 'error');
-            return;
-        }
-        exps = res.data || [];
-        console.log(`✅ Loaded ${exps.length} experiences`);
-        renderTable();
-    } catch (err) {
-        console.error('❌ Error in loadExps:', err);
-        showToast('Terjadi kesalahan saat load experiences', 'error');
-    }
-}
-
-function renderTable() {
-    const tbody = document.getElementById('expBody');
-    if (!exps.length) {
-        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:#a09ab8;padding:24px;">Belum ada data pengalaman</td></tr>';
-        return;
-    }
-    tbody.innerHTML = exps.map(e => `
-        <tr>
-            <td><strong>${e.company}</strong></td>
-            <td>${e.position}</td>
-            <td>${e.start_date || '—'} – ${e.is_current ? 'Sekarang' : (e.end_date || '—')}</td>
-            <td>${e.is_current ? '<span class="badge badge-sage">Aktif</span>' : '<span class="badge badge-purple">Selesai</span>'}</td>
-            <td>
-                <button class="btn btn-outline btn-sm" onclick="editExp(${e.id})">Edit</button>
-                <button class="btn btn-danger btn-sm" onclick="confirmDelete(() => deleteExp(${e.id}))">Hapus</button>
-            </td>
-        </tr>
-    `).join('');
-}
-
-function resetForm() {
-    document.getElementById('expId').value = '';
-    document.getElementById('modalTitle').textContent = 'Tambah Pengalaman';
-    ['eCompany','ePosition','eStart','eEnd','eDesc'].forEach(id => document.getElementById(id).value = '');
-    document.getElementById('eCurrent').checked = false;
-}
-
-function editExp(id) {
-    const e = exps.find(x => x.id === id);
-    if (!e) return;
-    document.getElementById('expId').value = e.id;
-    document.getElementById('modalTitle').textContent = 'Edit Pengalaman';
-    document.getElementById('eCompany').value = e.company || '';
-    document.getElementById('ePosition').value = e.position || '';
-    document.getElementById('eStart').value = e.start_date || '';
-    document.getElementById('eEnd').value = e.end_date || '';
-    document.getElementById('eCurrent').checked = !!e.is_current;
-    document.getElementById('eDesc').value = e.description || '';
-    openModal('expModal');
-}
-
-async function saveExp() {
-    const id = document.getElementById('expId').value;
+document.getElementById('experienceForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
     const body = {
         company: document.getElementById('eCompany').value.trim(),
         position: document.getElementById('ePosition').value.trim(),
-        start_date: document.getElementById('eStart').value.trim(),
-        end_date: document.getElementById('eEnd').value.trim(),
-        is_current: document.getElementById('eCurrent').checked ? 1 : 0,
-        description: document.getElementById('eDesc').value.trim()
+        start_date: document.getElementById('eStartDate').value.trim() || null,
+        end_date: document.getElementById('eEndDate').value.trim() || null,
+        is_current: document.getElementById('eIsCurrent').checked ? 1 : 0,
+        description: document.getElementById('eDescription').value.trim() || null,
+        logo_url: document.getElementById('eLogoUrl').value.trim() || null
     };
-    if (!body.company || !body.position) { alert('Perusahaan dan posisi wajib diisi'); return; }
+
+    if (!body.company || !body.position) {
+        alert('Perusahaan dan posisi harus diisi!');
+        return;
+    }
+
     try {
-        const url = id ? `/api/admin/experiences/${id}` : '/api/admin/experiences';
-        const method = id ? 'PUT' : 'POST';
-        console.log(`📤 ${method} ${url}`, body);
-        const res = await apiCall(url, method, body);
-        if (res.success) {
-            showToast(res.message || 'Berhasil disimpan', 'success');
-            closeModal('expModal');
-            loadExps();
+        const url = currentExperienceId ? `/api/admin/experiences/${currentExperienceId}` : '/api/admin/experiences';
+        const method = currentExperienceId ? 'PUT' : 'POST';
+        
+        const res = await fetch(url, {
+            method: method,
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body)
+        });
+        
+        const data = await res.json();
+        if (data.success) {
+            alert(data.message);
+            document.getElementById('experienceForm').reset();
+            currentExperienceId = null;
+            loadExperiences();
         } else {
-            showToast(res.message || 'Gagal', 'error');
+            alert('Error: ' + data.message);
         }
-    } catch (err) {
-        console.error('❌ Error in saveExp:', err);
-        showToast('Terjadi kesalahan saat save', 'error');
+    } catch (e) {
+        alert('Error: ' + e.message);
+    }
+});
+
+async function loadExperiences() {
+    try {
+        const res = await fetch('/api/admin/experiences');
+        const data = await res.json();
+        const list = document.getElementById('experienceList');
+        
+        if (!data.data || data.data.length === 0) {
+            list.innerHTML = '<p style="color:#999;">Tidak ada data pengalaman</p>';
+            return;
+        }
+        
+        list.innerHTML = data.data.map(e => `
+            <div class="experience-card">
+                <div class="card-header">
+                    <div>
+                        <div class="card-title">${e.position}</div>
+                        <div class="card-subtitle">${e.company}</div>
+                    </div>
+                    <div style="display:flex;gap:8px;">
+                        ${e.is_current ? '<span class="badge current">Aktif</span>' : ''}
+                        <button class="btn-edit" onclick="editExperience(${e.id})">Edit</button>
+                        <button class="btn-danger" onclick="deleteExperience(${e.id})">Hapus</button>
+                    </div>
+                </div>
+                <div class="card-meta">
+                    <span>📅 ${e.start_date || 'N/A'} - ${e.is_current ? 'Sekarang' : (e.end_date || 'N/A')}</span>
+                </div>
+                ${e.description ? `<div class="card-description">${e.description}</div>` : ''}
+            </div>
+        `).join('');
+    } catch (e) {
+        console.error('Error loading experiences:', e);
     }
 }
 
-async function deleteExp(id) {
+async function editExperience(id) {
     try {
-        console.log(`📤 DELETE /api/admin/experiences/${id}`);
-        const res = await apiCall(`/api/admin/experiences/${id}`, 'DELETE');
-        if (res.success) {
-            showToast(res.message || 'Berhasil dihapus', 'success');
-            loadExps();
-        } else {
-            showToast(res.message || 'Gagal dihapus', 'error');
+        const res = await fetch('/api/admin/experiences');
+        const data = await res.json();
+        const exp = data.data.find(e => e.id === id);
+        
+        if (exp) {
+            currentExperienceId = id;
+            document.getElementById('eId').value = exp.id;
+            document.getElementById('eCompany').value = exp.company || '';
+            document.getElementById('ePosition').value = exp.position || '';
+            document.getElementById('eStartDate').value = exp.start_date || '';
+            document.getElementById('eEndDate').value = exp.end_date || '';
+            document.getElementById('eIsCurrent').checked = exp.is_current;
+            document.getElementById('eDescription').value = exp.description || '';
+            document.getElementById('eLogoUrl').value = exp.logo_url || '';
         }
-    } catch (err) {
-        console.error('❌ Error in deleteExp:', err);
-        showToast('Terjadi kesalahan saat hapus', 'error');
+    } catch (e) {
+        alert('Error: ' + e.message);
     }
 }
 
-loadExps();
+async function deleteExperience(id) {
+    if (!confirm('Yakin ingin menghapus pengalaman ini?')) return;
+    
+    try {
+        const res = await fetch(`/api/admin/experiences/${id}`, { method: 'DELETE' });
+        const data = await res.json();
+        if (data.success) {
+            alert(data.message);
+            loadExperiences();
+        } else {
+            alert('Error: ' + data.message);
+        }
+    } catch (e) {
+        alert('Error: ' + e.message);
+    }
+}
+
+loadExperiences();

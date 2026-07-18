@@ -1,50 +1,89 @@
-{% extends "admin/base.html" %}
-{% block title %}Skill{% endblock %}
-{% block page_title %}Kelola Skill{% endblock %}
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Skills</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='admin/css/admin.css') }}">
+</head>
+<body>
+    <div class="admin-container">
+        <nav class="admin-nav">
+            <div class="nav-brand">✦ Admin Panel</div>
+            <div class="nav-links">
+                <a href="/admin/dashboard">Dashboard</a>
+                <a href="/admin/profiles">Profil</a>
+                <a href="/admin/skills" class="active">Skills</a>
+                <a href="/admin/experience">Pengalaman</a>
+                <a href="/admin/projects">Proyek</a>
+                <a href="/admin/contact">Kontak</a>
+                <a href="/admin/logout">Logout</a>
+            </div>
+        </nav>
 
-{% block content %}
-<div class="card">
-    <div class="section-header">
-        <span class="section-title">Data Skill</span>
-        <button class="btn btn-primary btn-sm" onclick="openModal('skillModal'); resetForm()">+ Tambah Skill</button>
-    </div>
-    <div class="table-wrap">
-        <table>
-            <thead>
-                <tr><th>Nama</th><th>Kategori</th><th>Level</th><th>Aksi</th></tr>
-            </thead>
-            <tbody id="skillBody"></tbody>
-        </table>
-    </div>
-</div>
+        <main class="admin-main">
+            <div class="admin-header">
+                <h1>Kelola Skills</h1>
+            </div>
 
-<div id="skillModal" class="modal-backdrop">
-    <div class="modal">
-        <div class="modal-header">
-            <span class="modal-title" id="modalTitle">Tambah Skill</span>
-            <button class="modal-close" onclick="closeModal('skillModal')">✕</button>
-        </div>
-        <input type="hidden" id="skillId">
-        <div class="form-group">
-            <label>Nama Skill *</label>
-            <input type="text" id="sName" class="form-control" placeholder="Python, JavaScript, ...">
-        </div>
-        <div class="form-group">
-            <label>Kategori</label>
-            <input type="text" id="sCategory" class="form-control" placeholder="Backend, Frontend, Database, Tools">
-        </div>
-        <div class="form-group">
-            <label>Level (0–100): <span id="levelVal">80</span>%</label>
-            <input type="range" id="sLevel" min="0" max="100" value="80"
-                oninput="document.getElementById('levelVal').textContent = this.value"
-                style="width:100%; accent-color:#8b78b8;">
-        </div>
-        <div class="modal-footer">
-            <button class="btn btn-outline btn-sm" onclick="closeModal('skillModal')">Batal</button>
-            <button class="btn btn-primary btn-sm" onclick="saveSkill()">Simpan</button>
-        </div>
-    </div>
-</div>
-{% endblock %}
+            <div class="admin-content">
+                <div class="form-section">
+                    <h2>Tambah/Edit Skill</h2>
+                    <form id="skillForm">
+                        <input type="hidden" id="sId">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Nama Skill *</label>
+                                <input type="text" id="sName" placeholder="Contoh: JavaScript" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Kategori</label>
+                                <select id="sCategory">
+                                    <option value="">Pilih Kategori</option>
+                                    <option value="Frontend">Frontend</option>
+                                    <option value="Backend">Backend</option>
+                                    <option value="Database">Database</option>
+                                    <option value="Tools">Tools</option>
+                                    <option value="Mobile">Mobile</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Level (0-100)</label>
+                                <input type="number" id="sLevel" min="0" max="100" value="80">
+                            </div>
+                            <div class="form-group">
+                                <label>Icon/Emoji</label>
+                                <input type="text" id="sIcon" placeholder="⚡">
+                            </div>
+                        </div>
+                        <div class="form-actions">
+                            <button type="submit" class="btn-primary">Simpan Skill</button>
+                            <button type="reset" class="btn-secondary">Reset</button>
+                        </div>
+                    </form>
+                </div>
 
-{% block extra_js %}<script src="{{ url_for('static', filename='admin/js/skills.js') }}"></script>{% endblock %}
+                <div class="data-section">
+                    <h2>Daftar Skills</h2>
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Nama</th>
+                                <th>Kategori</th>
+                                <th>Level</th>
+                                <th>Icon</th>
+                                <th>Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="skillsList"></tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="{{ url_for('static', filename='admin/js/skills.js') }}"></script>
+</body>
+</html>
